@@ -167,3 +167,4 @@ form.f .chk{margin-top:0}
 .sec.blue .kfoto{background:rgba(255,255,255,.08)}
 .map:has(.map-zast){height:auto}
 .map-zast .btn{white-space:normal;min-height:46px;font-size:15px;text-align:center;line-height:1.25;padding:10px 20px}
+.v-stage .v-load[hidden],.gal .cnt[hidden],.gal .ga[hidden]{display:none}
