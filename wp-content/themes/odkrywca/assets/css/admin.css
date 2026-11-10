@@ -1,0 +1,25 @@
+/* Panel BT Odkrywca */
+.odk-pola th{width:230px}
+.odk-media-l{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px;min-height:4px}
+.odk-media-l img{width:90px;height:90px;object-fit:cover;border-radius:4px;cursor:move;border:1px solid #dcdcde}
+.odk-plik{display:inline-block;background:#f0f0f1;border:1px solid #dcdcde;border-radius:4px;padding:4px 8px;cursor:move}
+.odk-rep-w{display:flex;gap:10px;align-items:flex-start;background:#f6f7f7;border:1px solid #dcdcde;border-radius:6px;padding:10px;margin:0 0 8px}
+.odk-rep-p{flex:1;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end}
+.odk-rep-p label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#50575e}
+.odk-rep-p label.odk-rep-textarea{flex:1 1 100%}
+.odk-rep-p label.odk-rep-text{flex:1 1 220px}
+.odk-rep-p textarea{width:100%;min-height:70px}
+.odk-rep-p input[type=number]{width:110px}
+.odk-rep-b{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.odk-rep-del{color:#b32d2e!important}
+.odk-rep-info{flex:1 1 100%;font-size:12px;color:#2f6b0e;font-weight:600}
+.odk-ust h2{margin-top:32px;padding-top:18px;border-top:1px solid #dcdcde}
+.odk-ust .form-table th{width:260px}
+.odk-tab{max-width:1100px}
+.odk-tab td,.odk-tab th{vertical-align:middle}
+.odk-st{display:inline-block;padding:2px 8px;border-radius:3px;background:#f0f0f1;font-weight:600}
+.odk-st-nowe{background:#e5f1fb;color:#0a4b78}.odk-st-zaliczka{background:#fff3c4}.odk-st-oplacone{background:#d7f0dc;color:#145c2a}.odk-st-anulowane{background:#fbe0e0;color:#8a1717}
+.odk-box{background:#fff;border:1px solid #dcdcde;padding:16px 20px;margin:16px 0;max-width:1100px}
+.odk-box h2{margin-top:0}
+.odk-dl{display:grid;grid-template-columns:220px 1fr;gap:6px 16px}
+.odk-dl dt{color:#50575e}.odk-dl dd{margin:0;font-weight:600}
