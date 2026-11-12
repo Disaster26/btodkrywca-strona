@@ -23,3 +23,6 @@
 .odk-box h2{margin-top:0}
 .odk-dl{display:grid;grid-template-columns:220px 1fr;gap:6px 16px}
 .odk-dl dt{color:#50575e}.odk-dl dd{margin:0;font-weight:600}
+/* Panel na telefonie: szerokie tabele przewijane w poziomie zamiast poszerzania strony */
+@media (max-width:782px){.odk-tab,.odk-box .widefat{display:block;overflow-x:auto;max-width:100%}.odk-dl{grid-template-columns:1fr}.odk-zest select{max-width:100%}}
+.odk-zest .odk-zest-b{display:flex;flex-wrap:wrap;gap:6px}

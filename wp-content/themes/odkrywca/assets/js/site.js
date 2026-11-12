@@ -202,6 +202,8 @@
   var bk=$('#bk'),f=$('#bkf');
   if(!bk||!f)return;
   var MAX=+f.getAttribute('data-max')||10,ZT=f.getAttribute('data-zaltyp'),ZAL=+f.getAttribute('data-zal')||0,ZTERM=f.getAttribute('data-zalterm')||'',DTERM=f.getAttribute('data-dopterm')||'';
+  var KURS=+f.getAttribute('data-kurs')||0,SKLR=+f.getAttribute('data-sklr')||0;
+  var fmtE=function(n){return fmt(n).replace(/ zł$/,' €')};
   var cur=1,ile=1,LAST=4;
   var stations=[{x:12.5,y:50},{x:37.5,y:40},{x:62.5,y:28},{x:87.5,y:12}],pathX=[0,37.5,112.5,187.5,262.5],pathY=[54,50,40,28,12];
   var sel=function(n){return $('input[name="'+n+'"]:checked',f)};
@@ -223,38 +225,46 @@
   function renderUbz(){
     var os=osoby(),c=cenaOs();
     $$('[data-proc-opt]',f).forEach(function(box){
-      var k=box.getAttribute('data-proc-opt'),pr=+box.getAttribute('data-proc'),skl=r2(c*pr/100);
+      var k=box.getAttribute('data-proc-opt'),pr=+box.getAttribute('data-proc'),skl=sklOs(pr);
       var was={};$$('input',box).forEach(function(x){was[x.value]=x.checked});
       var h='';
       os.forEach(function(n,i){h+='<label><input type="checkbox" name="opcje['+esc(k)+'][]" value="'+i+'"'+(was[i]?' checked':'')+'><span class="d"><b>'+esc(n)+'</b><small>uczestnik '+(i+1)+'</small></span><span class="pr">'+fmt(skl)+'</span></label>'});
       box.innerHTML=h;
       var s=$('[data-skl="'+k+'"]',f);if(s)s.textContent=fmt(skl);
+      var se=$('[data-skl-eur]',box.parentNode),e=eurOs();
+      if(se)se.textContent=e>0&&KURS>0?' Cena do wyliczenia: '+fmt(c)+' + '+fmtE(e)+' × '+KURS.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:4})+' zł (kurs euro) = '+fmt(r2(c+e*KURS))+'.':'';
     });
   }
+  function eurOs(){var t=sel('termin');return t?(+t.getAttribute('data-eur')||0):0}
+  /* składka za osobę: wpisana ręcznie przy wyjeździe albo % od ceny w zł + części w euro po kursie */
+  function sklOs(pr){return SKLR>0?SKLR:r2((cenaOs()+eurOs()*KURS)*pr/100)}
   function cenaOs(){var t=sel('termin'),m=sel('miejsce');return (t?+t.getAttribute('data-cena'):0)+(m?+m.getAttribute('data-doplata'):0)}
   function suma(){
-    var c=cenaOs(),imp=c*ile,opc=0,eur=[],lin=[];
+    var c=cenaOs(),imp=c*ile,opc=0,eur=[],lin=[],ce=eurOs();
+    if(ce>0)eur.push(fmtE(r2(ce*ile)));
     $$('[data-proc-opt]',f).forEach(function(box){
-      var pr=+box.getAttribute('data-proc'),skl=r2(c*pr/100),n=$$('input:checked',box).length;
+      var pr=+box.getAttribute('data-proc'),skl=sklOs(pr),n=$$('input:checked',box).length;
       if(n){opc+=r2(skl*n);lin.push(box.getAttribute('data-txt')+': '+n+' × '+fmt(skl)+' = '+fmt(r2(skl*n)))}
     });
     $$('input[name^="opcje["][value="all"]:checked',f).forEach(function(o){var v=+o.getAttribute('data-cena')*(o.getAttribute('data-za')==='osoba'?ile:1);if(o.getAttribute('data-waluta')==='eur')eur.push(v+' €');else{opc+=v;lin.push(o.getAttribute('data-txt')+': '+fmt(v))}});
     opc=r2(opc);
     var zal=imp;if(ZT==='proc')zal=r2(imp*ZAL/100);else if(ZT==='zl')zal=Math.min(imp,ZAL*ile);
-    return {cena:c,imp:imp,opc:opc,suma:r2(imp+opc),pierwsza:r2(zal+opc),eur:eur,lin:lin,zal:ZT!=='calosc'&&zal<imp};
+    return {cena:c,ce:ce,imp:imp,opc:opc,suma:r2(imp+opc),pierwsza:r2(zal+opc),eur:eur,lin:lin,zal:ZT!=='calosc'&&zal<imp};
   }
   function refresh(){
     if(ile>wolne())ile=wolne();
     $('#ile-o').textContent=ile;$('#ile').value=ile;
     $('#minus').disabled=ile<=1;$('#plus').disabled=ile>=wolne();
     var s=suma(),t=sel('termin'),m=sel('miejsce'),dod=t?t.getAttribute('data-dod'):'';
-    $('#cena-p').textContent=fmt(s.cena)+(dod?' '+dod:'')+' za osobę';
+    var cTxt=fmt(s.cena)+(s.ce>0?' + '+fmtE(s.ce):(dod?' '+dod:''));
+    $('#cena-p').textContent=cTxt+' za osobę';
     $('#sum').textContent=fmt(s.pierwsza)+(s.eur.length?' + '+s.eur.join(' + '):'');
-    $('#sum-l').textContent=s.zal?'Zaliczka (całość '+fmt(s.suma)+')':'Do zapłaty';
-    $('#bk-sub').textContent=(t?t.getAttribute('data-txt'):'')+' · '+fmt(s.cena)+' za osobę';
+    $('#sum-l').textContent=s.zal?'Zaliczka (całość '+fmt(s.suma)+(s.ce>0?' + '+fmtE(r2(s.ce*ile)):'')+')':'Do zapłaty';
+    $('#bk-sub').textContent=(t?t.getAttribute('data-txt'):'')+' · '+cTxt+' za osobę';
     $('#u-term').textContent=(t?t.getAttribute('data-txt'):'')+(m?', wyjazd: '+m.getAttribute('data-txt'):'');
     var os=osoby();$('#u-os').innerHTML=os.map(function(n,i){return (i+1)+'. '+esc(n)}).join('<br>');
-    $('#u-cena').innerHTML=esc(ile+' × '+fmt(s.cena)+' = '+fmt(s.imp))+(dod?esc(' (+ '+dod.replace(/^\+\s*/,'')+' za osobę)'):'')+s.lin.map(function(l){return '<br>'+esc(l)}).join('')+(s.lin.length?'<br><b>Razem: '+esc(fmt(s.suma))+'</b>':'');
+    var eurRaz=s.ce>0?' + '+fmtE(r2(s.ce*ile)):'';
+    $('#u-cena').innerHTML=(s.ce>0?esc(ile+' × ('+fmt(s.cena)+' + '+fmtE(s.ce)+') = '+fmt(s.imp)+eurRaz):esc(ile+' × '+fmt(s.cena)+' = '+fmt(s.imp))+(dod?esc(' (+ '+dod.replace(/^\+\s*/,'')+' za osobę)'):''))+s.lin.map(function(l){return '<br>'+esc(l)}).join('')+(s.lin.length?'<br><b>Razem: '+esc(fmt(s.suma)+eurRaz)+'</b>':'');
     var pl=sel('platnosc'),plTxt=pl&&pl.value==='online'?'online (Przelewy24)':'przelew tradycyjny';
     $('#u-plat').innerHTML=s.zal?esc('Zaliczka'+(s.opc?' ze składką ubezpieczenia':'')+' '+fmt(s.pierwsza)+', '+ZTERM+'; dopłata '+fmt(s.suma-s.pierwsza)+', '+DTERM+'.')+'<br>'+esc(plTxt):esc('Całość '+fmt(s.suma)+', '+ZTERM+'. ')+'<br>'+esc(plTxt);
     $('#b-kw').textContent=fmt(s.pierwsza);
