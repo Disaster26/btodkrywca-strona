@@ -28,7 +28,7 @@ body{font-size:10.5pt;line-height:1.45;color:#111}
 .blk h2{font-size:13pt;margin-bottom:2mm;break-after:avoid}
 .olist{gap:1.5mm}
 .olist li{font-size:10pt!important;padding-left:6mm;break-inside:avoid}
-.olist li::before{width:3mm;height:3mm;border-width:2.2px;top:1mm}
+.olist li::before{width:3.6mm;height:3.5mm;top:.6mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .extra{padding:2.5mm 3mm;margin-top:2mm;font-size:9.5pt;break-inside:avoid;background:#f4f6f5!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .tr{padding:2mm 3mm;grid-template-columns:1.4fr 1fr 1.1fr!important;break-inside:avoid}
 .org img{width:10mm}

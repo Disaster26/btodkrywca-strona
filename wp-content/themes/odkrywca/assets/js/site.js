@@ -198,49 +198,71 @@
     window.addEventListener('scroll',function(){mob.classList.toggle('widac',!seenTop&&top.getBoundingClientRect().top<0)},{passive:true});
   }
 
-  /* ---------- zapis na wyjazd ---------- */
+  /* ---------- rezerwacja: 4 etapy (impreza, uczestnicy, ubezpieczenie i płatność, umowa) ---------- */
   var bk=$('#bk'),f=$('#bkf');
   if(!bk||!f)return;
-  var MAX=+f.getAttribute('data-max')||10,ZAL=+f.getAttribute('data-zal')||0,ZT=f.getAttribute('data-zaltyp'),TYT=f.getAttribute('data-tyt');
-  var cur=1,ile=1;
+  var MAX=+f.getAttribute('data-max')||10,ZT=f.getAttribute('data-zaltyp'),ZAL=+f.getAttribute('data-zal')||0,ZTERM=f.getAttribute('data-zalterm')||'',DTERM=f.getAttribute('data-dopterm')||'';
+  var cur=1,ile=1,LAST=4;
   var stations=[{x:12.5,y:50},{x:37.5,y:40},{x:62.5,y:28},{x:87.5,y:12}],pathX=[0,37.5,112.5,187.5,262.5],pathY=[54,50,40,28,12];
   var sel=function(n){return $('input[name="'+n+'"]:checked',f)};
+  var esc=function(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML};
   var wolne=function(){var t=sel('termin');return t?Math.min(MAX,+t.getAttribute('data-wolne')||MAX):MAX};
-  var nazwisko=function(){var i=$('input[name="osoba[imie]"]',f),n=$('input[name="osoba[nazwisko]"]',f);return ((i?i.value:'')+' '+(n?n.value:'')).trim()};
-  function osoby(){
-    var a=[],jade=$('#jade').checked;
-    if(jade)a.push(nazwisko()||'osoba zgłaszająca');
-    $$('#pers .pers',f).forEach(function(p,i){var x=$$('input',p);var t=((x[0]?x[0].value:'')+' '+(x[1]?x[1].value:'')).trim();a.push(t||('uczestnik '+(i+1+(jade?1:0))))});
-    return a;
+  var r2=function(n){return Math.round(n*100)/100};
+  function imie(box,nr){
+    if(!box)return 'uczestnik '+nr;
+    var i=box.querySelector('input[name$="[imie]"]'),n=box.querySelector('input[name$="[nazwisko]"]');
+    var t=((i?i.value:'')+' '+(n?n.value:'')).trim();return t||('uczestnik '+nr);
   }
+  function osoby(){var a=[imie($('.pers.p1',f),1)];$$('#pers .pers',f).forEach(function(p,i){a.push(imie(p,i+2))});return a}
   function renderPers(){
-    var box=$('#pers'),tpl=$('#pers-t'),trzeba=$('#jade').checked?ile-1:ile,have=$$('.pers',box).length;
+    var box=$('#pers'),tpl=$('#pers-t'),trzeba=ile-1,have=$$('.pers',box).length;
     for(var i=have;i<trzeba;i++){var d=document.createElement('div');d.innerHTML=tpl.innerHTML.replace(/__i__/g,i);box.appendChild(d.firstElementChild)}
-    $$('.pers',box).forEach(function(p,i){if(i>=trzeba)p.remove();else $('.nr',p).textContent=i+1+($('#jade').checked?1:0)});
+    $$('.pers',box).forEach(function(p,i){if(i>=trzeba)p.remove();else $('.nr',p).textContent=i+2});
   }
+  /* dodatkowe ubezpieczenie: wybór przy każdym uczestniku, składka = % ceny imprezy za osobę */
+  function renderUbz(){
+    var os=osoby(),c=cenaOs();
+    $$('[data-proc-opt]',f).forEach(function(box){
+      var k=box.getAttribute('data-proc-opt'),pr=+box.getAttribute('data-proc'),skl=r2(c*pr/100);
+      var was={};$$('input',box).forEach(function(x){was[x.value]=x.checked});
+      var h='';
+      os.forEach(function(n,i){h+='<label><input type="checkbox" name="opcje['+esc(k)+'][]" value="'+i+'"'+(was[i]?' checked':'')+'><span class="d"><b>'+esc(n)+'</b><small>uczestnik '+(i+1)+'</small></span><span class="pr">'+fmt(skl)+'</span></label>'});
+      box.innerHTML=h;
+      var s=$('[data-skl="'+k+'"]',f);if(s)s.textContent=fmt(skl);
+    });
+  }
+  function cenaOs(){var t=sel('termin'),m=sel('miejsce');return (t?+t.getAttribute('data-cena'):0)+(m?+m.getAttribute('data-doplata'):0)}
   function suma(){
-    var t=sel('termin'),m=sel('miejsce'),c=(t?+t.getAttribute('data-cena'):0)+(m?+m.getAttribute('data-doplata'):0),s=c*ile,eur=[];
-    $$('input[name="opcje[]"]:checked',f).forEach(function(o){var v=+o.getAttribute('data-cena')*(o.getAttribute('data-za')==='osoba'?ile:1);if(o.getAttribute('data-waluta')==='eur')eur.push(v+' €');else s+=v});
-    var z=s;if(ZAL>0)z=ZT==='proc'?Math.round(s*ZAL)/100:Math.min(s,ZAL*ile);
-    return {cena:c,suma:s,zal:z,eur:eur};
+    var c=cenaOs(),imp=c*ile,opc=0,eur=[],lin=[];
+    $$('[data-proc-opt]',f).forEach(function(box){
+      var pr=+box.getAttribute('data-proc'),skl=r2(c*pr/100),n=$$('input:checked',box).length;
+      if(n){opc+=r2(skl*n);lin.push(box.getAttribute('data-txt')+': '+n+' × '+fmt(skl)+' = '+fmt(r2(skl*n)))}
+    });
+    $$('input[name^="opcje["][value="all"]:checked',f).forEach(function(o){var v=+o.getAttribute('data-cena')*(o.getAttribute('data-za')==='osoba'?ile:1);if(o.getAttribute('data-waluta')==='eur')eur.push(v+' €');else{opc+=v;lin.push(o.getAttribute('data-txt')+': '+fmt(v))}});
+    opc=r2(opc);
+    var zal=imp;if(ZT==='proc')zal=r2(imp*ZAL/100);else if(ZT==='zl')zal=Math.min(imp,ZAL*ile);
+    return {cena:c,imp:imp,opc:opc,suma:r2(imp+opc),pierwsza:r2(zal+opc),eur:eur,lin:lin,zal:ZT!=='calosc'&&zal<imp};
   }
   function refresh(){
     if(ile>wolne())ile=wolne();
     $('#ile-o').textContent=ile;$('#ile').value=ile;
     $('#minus').disabled=ile<=1;$('#plus').disabled=ile>=wolne();
-    var s=suma(),t=sel('termin'),m=sel('miejsce');
-    $('#sum').textContent=fmt(s.zal)+(s.eur.length?' + '+s.eur.join(' + '):'');
-    $('#sum-l').textContent=s.zal<s.suma?'Zaliczka (całość '+fmt(s.suma)+')':'Do zapłaty';
+    var s=suma(),t=sel('termin'),m=sel('miejsce'),dod=t?t.getAttribute('data-dod'):'';
+    $('#cena-p').textContent=fmt(s.cena)+(dod?' '+dod:'')+' za osobę';
+    $('#sum').textContent=fmt(s.pierwsza)+(s.eur.length?' + '+s.eur.join(' + '):'');
+    $('#sum-l').textContent=s.zal?'Zaliczka (całość '+fmt(s.suma)+')':'Do zapłaty';
     $('#bk-sub').textContent=(t?t.getAttribute('data-txt'):'')+' · '+fmt(s.cena)+' za osobę';
     $('#u-term').textContent=(t?t.getAttribute('data-txt'):'')+(m?', wyjazd: '+m.getAttribute('data-txt'):'');
-    $('#u-os').textContent=osoby().join(', ')+' ('+ile+' os.)';
-    $('#u-cena').textContent=ile+' × '+fmt(s.cena)+' = '+fmt(s.cena*ile)+(s.suma!==s.cena*ile?', z opcjami '+fmt(s.suma):'');
-    $('#b-kw').textContent=fmt(s.zal);
-    var zi=$('#zal-info');if(zi)zi.textContent=s.zal<s.suma?'Zaliczka '+fmt(s.zal)+', pozostała kwota '+fmt(s.suma-s.zal)+' płatna w terminie podanym w potwierdzeniu.':'';
-    var pl=sel('platnosc');$('#p-przelew').classList.toggle('on',!pl||pl.value==='przelew');$('#p-online').classList.toggle('on',!!pl&&pl.value==='online');
+    var os=osoby();$('#u-os').innerHTML=os.map(function(n,i){return (i+1)+'. '+esc(n)}).join('<br>');
+    $('#u-cena').innerHTML=esc(ile+' × '+fmt(s.cena)+' = '+fmt(s.imp))+(dod?esc(' (+ '+dod.replace(/^\+\s*/,'')+' za osobę)'):'')+s.lin.map(function(l){return '<br>'+esc(l)}).join('')+(s.lin.length?'<br><b>Razem: '+esc(fmt(s.suma))+'</b>':'');
+    var pl=sel('platnosc'),plTxt=pl&&pl.value==='online'?'online (Przelewy24)':'przelew tradycyjny';
+    $('#u-plat').innerHTML=s.zal?esc('Zaliczka'+(s.opc?' ze składką ubezpieczenia':'')+' '+fmt(s.pierwsza)+', '+ZTERM+'; dopłata '+fmt(s.suma-s.pierwsza)+', '+DTERM+'.')+'<br>'+esc(plTxt):esc('Całość '+fmt(s.suma)+', '+ZTERM+'. ')+'<br>'+esc(plTxt);
+    $('#b-kw').textContent=fmt(s.pierwsza);
+    var zi=$('#zal-info');if(zi)zi.textContent=s.zal?'Teraz płacisz zaliczkę'+(s.opc?' ze składką ubezpieczenia':'')+': '+fmt(s.pierwsza)+', '+ZTERM+'. Pozostałe '+fmt(s.suma-s.pierwsza)+' '+DTERM+'.':'';
+    $('#p-przelew').classList.toggle('on',!pl||pl.value==='przelew');$('#p-online').classList.toggle('on',!!pl&&pl.value==='online');
     var c2=$('input[name="umowa"]',f),pod=$('#podpis');
     pod.classList.toggle('on',c2.checked);
-    if(c2.checked){var d=new Date();pod.textContent='Akceptacja elektroniczna: '+(nazwisko()||'osoba zgłaszająca')+', '+d.toLocaleDateString('pl-PL')+', godz. '+d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}
+    if(c2.checked){var d=new Date();pod.textContent='Akceptacja elektroniczna: '+os[0]+', '+d.toLocaleDateString('pl-PL')+', godz. '+d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}
   }
   function trasa(){
     var s=stations[cur-1],pk=$('#pk');pk.style.left=s.x+'%';pk.style.top=(s.y-31)+'px';
@@ -250,8 +272,9 @@
   }
   function show(n){
     cur=n;
+    if(n===3)renderUbz();
     $$('.bk-step',bk).forEach(function(s){s.classList.toggle('on',+s.getAttribute('data-step')===n)});
-    $('#back').hidden=n===1;$('#next').hidden=n===3;$('#wyslij').hidden=n!==3;
+    $('#back').hidden=n===1;$('#next').hidden=n===LAST;$('#wyslij').hidden=n!==LAST;
     $('#bk-body').scrollTop=0;trasa();refresh();
   }
   var restored=false;
@@ -267,16 +290,23 @@
   $$('[data-close]',bk).forEach(function(b){b.addEventListener('click',function(){bk.close?bk.close():bk.removeAttribute('open')})});
   $('#minus').addEventListener('click',function(){if(ile>1){ile--;renderPers();refresh()}});
   $('#plus').addEventListener('click',function(){if(ile<wolne()){ile++;renderPers();refresh()}});
-  $('#jade').addEventListener('change',function(){renderPers();refresh()});
-  f.addEventListener('input',refresh);f.addEventListener('change',refresh);
+  f.addEventListener('input',refresh);f.addEventListener('change',function(e){if(e.target.name==='termin'||e.target.name==='miejsce')renderUbz();refresh()});
   $('#back').addEventListener('click',function(){if(cur>1)show(cur-1)});
   $('#next').addEventListener('click',function(){
     if(cur===1){if(!sel('termin'))return;show(2)}
     else if(cur===2){if(sprawdz($('[data-step="2"]',f)))show(3)}
+    else if(cur===3){show(4)}
   });
   f.addEventListener('submit',function(e){
     if(!sprawdz($('[data-step="2"]',f))){e.preventDefault();show(2);sprawdz($('[data-step="2"]',f));return}
-    try{var o={};new FormData(f).forEach(function(v,k){if(!/^(dok|umowa|rodo|zn|token|strona_www)/.test(k))o[k]=v});o._ile=ile;sessionStorage.setItem('odk-zapis-'+f.wyjazd.value,JSON.stringify(o))}catch(x){}
+    if(!sprawdz($('[data-step="4"]',f))){e.preventDefault();return}
+    if(f.hasAttribute('data-demo')){
+      e.preventDefault();var mm=$('#bk-msg');mm.hidden=false;
+      mm.textContent='To podgląd strony: rezerwacja nie została wysłana. Na stronie docelowej zgłoszenie trafi do biura, a uczestnik dostanie mailem potwierdzenie umowy z numerem rezerwacji i danymi do przelewu.';
+      mm.scrollIntoView({block:'nearest'});return;
+    }
+    /* do przywrócenia po błędzie: bez danych dokumentów i zgód */
+    try{var pf={};$$('.pf [name]',f).forEach(function(x){pf[x.name]=1});var o={};new FormData(f).forEach(function(v,k){if(!/^(dok|umowa|rodo|zn|token|strona_www)/.test(k)&&!pf[k])o[k]=v});o._ile=ile;sessionStorage.setItem('odk-zapis-'+f.wyjazd.value,JSON.stringify(o))}catch(x){}
     $('#wyslij').disabled=true;$('#wyslij').textContent='Wysyłanie...';
   });
   /* po błędzie serwera: przywrócenie wpisanych danych */
@@ -286,7 +316,7 @@
       if(o){
         ile=Math.max(1,Math.min(MAX,+o._ile||1));
         Object.keys(o).forEach(function(k){if(/^(termin|miejsce|platnosc)$/.test(k)){var r=$('input[name="'+k+'"][value="'+o[k]+'"]',f);if(r)r.checked=true}});
-        $('#jade').checked='jade' in o;renderPers();
+        renderPers();
         Object.keys(o).forEach(function(k){var el=f.querySelector('[name="'+k.replace(/"/g,'')+'"]');if(el&&el.type!=='radio'&&el.type!=='checkbox'&&el.type!=='hidden')el.value=o[k]});
         restored=true;open();show(2);
       }

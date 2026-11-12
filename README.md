@@ -1,1 +1,1 @@
-Podgląd postępu strony przewodnikbeskidzki.com.pl (statyczny eksport z WordPressa). Nie indeksować.
+Podgląd strony btodkrywca.pl dla klientki (statyczny eksport z WordPressa, formularze bez wysyłki). Nie indeksować.

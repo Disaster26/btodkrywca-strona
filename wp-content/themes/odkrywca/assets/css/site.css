@@ -158,7 +158,7 @@ p{margin:0 0 14px}
 .how{list-style:none;padding:0;margin:0;display:grid;gap:0}
 .how li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;padding:16px 0;border-top:1px solid rgba(255,255,255,.18)}
 .how li:last-child{border-bottom:1px solid rgba(255,255,255,.18)}
-.how .o{width:22px;height:22px;border:4px solid var(--green);border-radius:50%;margin-top:3px;border-right-color:transparent;transform:rotate(-40deg)}
+.how .o{width:24px;height:23px;margin-top:3px;background:url(../img/sygnet-punkt.webp) center/contain no-repeat}
 .how b{color:#fff;font-weight:600;display:block}
 
 /* dokumenty */
@@ -180,6 +180,7 @@ form.f{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:#fff;borde
 label.fl{display:grid;gap:6px;font-size:15px;font-weight:600;color:var(--ink)}
 .fl input,.fl select,.fl textarea{font:400 17px "Source Sans 3",sans-serif;color:var(--ink);border:1.5px solid #CDD4D0;border-radius:8px;padding:12px 14px;background:#fff;width:100%;min-height:50px}
 .fl textarea{min-height:110px;resize:vertical}
+.bk .fl textarea{min-height:50px;height:50px}
 .fl input:focus,.fl select:focus,.fl textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,80,128,.12)}
 .fl.err input,.fl.err select{border-color:#C0392B}
 .fmsg{grid-column:1/-1;font-size:15px;color:var(--green-d);font-weight:600;min-height:1em;margin:0}
@@ -226,7 +227,7 @@ label.fl{display:grid;gap:6px;font-size:15px;font-weight:600;color:var(--ink)}
 .blk h2{font-size:clamp(23px,2.2vw,28px);margin-bottom:18px}
 .olist{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 .olist li{position:relative;padding-left:34px}
-.olist li::before{content:"";position:absolute;left:2px;top:4px;width:15px;height:15px;border:3.5px solid var(--green);border-radius:50%;border-right-color:transparent;transform:rotate(-40deg)}
+.olist li::before{content:"";position:absolute;left:0;top:3px;width:21px;height:20px;background:url(../img/sygnet-punkt.webp) center/contain no-repeat}
 .olist li b{font-weight:600}
 .olist.small li{font-size:16px}
 .extra{background:var(--bg2);border-radius:var(--r);padding:18px 20px;margin-top:18px;font-size:16px}
@@ -321,7 +322,26 @@ dialog.bk::backdrop{background:rgba(0,28,46,.55)}
 .bk-btns{display:flex;gap:10px}
 .bk-btns .btn{min-height:50px;padding:0 22px;white-space:nowrap}
 #back svg{width:18px;height:18px}
-.demo{font-size:13px;color:var(--muted);text-align:center;padding:0 24px 12px;margin:0;flex:none}
+.demo{font-size:14px;color:var(--ink);text-align:left;padding:10px 24px 12px;margin:0;flex:none;background:#EEF5E2;border-top:1px solid #CFE3AE}
+.demo[hidden]{display:none}
+.imp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;margin:0;border:1.5px solid #CDD4D0;border-radius:10px;padding:14px 16px}
+.imp dt{color:var(--muted);font-size:15px}
+.imp dd{margin:0;font:600 16px "Lexend",sans-serif}
+.cena-p{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:22px;padding:14px 16px;border-radius:10px;background:var(--bg2)}
+.cena-p span{color:var(--muted);font-size:15px}
+.cena-p b{font:600 18px "Lexend",sans-serif}
+.pers h4 small{display:block;font:400 14px "Source Sans 3",sans-serif;color:var(--muted);margin-top:2px}
+.pers.p1{border-top:0;padding-top:0;margin-top:14px}
+.hint.mt0{margin:0 0 4px}
+.ubz{border:1.5px solid #CDD4D0;border-radius:10px;padding:16px;font-size:15px}
+.ubz+.ubz,.ubz+.opt,.opt+.ubz{margin-top:12px}
+.ubz-t{display:block;font:600 16px "Lexend",sans-serif;margin-bottom:6px}
+.ubz p{margin:0 0 8px;color:var(--grey)}
+.ubz p b{color:var(--ink)}
+.ubz-os{margin-top:12px}
+.ubz-os label{padding:11px 14px}
+.w-m{display:none}
+@media (max-width:560px){.w-d{display:none}.w-m{display:inline}}
 
 /* ---------- responsywność ---------- */
 @media (max-width:1180px){
@@ -441,7 +461,7 @@ dialog.bk::backdrop{background:rgba(0,28,46,.55)}
 .tile span::after{content:" →"}
 .tiles-note{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);margin:14px 0 0;line-height:1.45}
 .tiles-note b{color:var(--grey);font-weight:600}
-.tiles-note i{flex:none;width:18px;height:18px;border:3px solid var(--green);border-radius:50%;border-right-color:transparent;transform:rotate(-40deg);margin-top:1px}
+.tiles-note i{flex:none;width:19px;height:18px;margin-top:2px;background:url(../img/sygnet-punkt.webp) center/contain no-repeat}
 
 /* zakładki i filtry */
 .tabs-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:-6px 0 22px}
@@ -490,7 +510,7 @@ dialog.bk::backdrop{background:rgba(0,28,46,.55)}
 .ins-txt>p{color:var(--grey);font-size:18px}
 .ins-list{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
 .ins-list li{position:relative;padding-left:28px;font-size:16px}
-.ins-list li::before{content:"";position:absolute;left:0;top:4px;width:13px;height:13px;border:3px solid var(--green);border-radius:50%;border-right-color:transparent;transform:rotate(-40deg)}
+.ins-list li::before{content:"";position:absolute;left:0;top:3px;width:17px;height:16px;background:url(../img/sygnet-punkt.webp) center/contain no-repeat}
 .ins-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:clamp(22px,3vw,32px);box-shadow:0 14px 40px rgba(20,40,30,.08)}
 .ins-box h3{font-size:22px;margin-bottom:8px}
 .ins-box p{color:var(--grey);font-size:16px}
@@ -505,7 +525,7 @@ dialog.bk::backdrop{background:rgba(0,28,46,.55)}
 .firm-list h3{font-size:18px;margin-bottom:10px}
 .firm-list ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .firm-list li{position:relative;padding-left:26px;font-size:16px;color:var(--grey)}
-.firm-list li::before{content:"";position:absolute;left:0;top:5px;width:12px;height:12px;border:3px solid var(--green);border-radius:50%;border-right-color:transparent;transform:rotate(-40deg)}
+.firm-list li::before{content:"";position:absolute;left:0;top:4px;width:16px;height:15px;background:url(../img/sygnet-punkt.webp) center/contain no-repeat}
 
 /* Facebook */
 .fb{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(32px,5vw,72px);align-items:center}
